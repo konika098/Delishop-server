@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // const uri =`mongodb+srv://DeliShop:bPOceElhAFu7rA7V@cluster0.0yl10xg.mongodb.net/?retryWrites=true&w=majority;` 
-var uri = "mongodb://DeliShopSer:cRdcgpesbuMuYOim@ac-eadvqhz-shard-00-00.ycrlcva.mongodb.net:27017,ac-eadvqhz-shard-00-01.ycrlcva.mongodb.net:27017,ac-eadvqhz-shard-00-02.ycrlcva.mongodb.net:27017/?ssl=true&replicaSet=atlas-hbjutf-shard-0&authSource=admin&retryWrites=true&w=majority";
+var uri = `mongodb://${process.env.S3_BUCKET}:${process.env.S3_KEY}@ac-eadvqhz-shard-00-00.ycrlcva.mongodb.net:27017,ac-eadvqhz-shard-00-01.ycrlcva.mongodb.net:27017,ac-eadvqhz-shard-00-02.ycrlcva.mongodb.net:27017/?ssl=true&replicaSet=atlas-hbjutf-shard-0&authSource=admin&retryWrites=true&w=majority`;
 
 
 
@@ -25,6 +25,24 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
+
+    const foodCollection = client.db('foodDB').collection('food')
+    
+    app.get('/food', async(req,res)=>{
+      const cursor =foodCollection.find();
+      const result = await cursor.toArray();
+      res.send(result)
+    })
+    app.post('/food', async(req,res)=>{
+      const newFood =req.body
+      console.log(newFood)
+      const result = await foodCollection.insertOne(newFood)
+      res.send(result)
+    })
+
+
+
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
