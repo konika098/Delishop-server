@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -39,6 +38,30 @@ async function run() {
       const result = await foodCollection.insertOne(newFood)
       res.send(result)
     })
+    app.get('/BrandProduct/:name',async(req,res)=>{
+      const BrandName = req.params.name
+      const query = {BrandName :{$eq : BrandName}}
+      const result = await foodCollection.find(query).toArray()
+      res.send(result)
+ })
+
+    app.put("/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          name: body.name,
+          photoUrl: body.photoUrl,
+          
+          
+          description: body.description,
+         
+        },
+      };
+      const result = await foodCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
 
 
