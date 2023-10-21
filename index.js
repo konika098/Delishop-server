@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -26,6 +26,7 @@ async function run() {
     await client.connect();
 
     const foodCollection = client.db('foodDB').collection('food')
+    const addFoodCollection = client.db('foodDB').collection('addFood')
     
     app.get('/food', async(req,res)=>{
       const cursor =foodCollection.find();
@@ -35,7 +36,7 @@ async function run() {
     app.post('/food', async(req,res)=>{
       const newFood =req.body
       console.log(newFood)
-      const result = await foodCollection.insertOne(newFood)
+      const result = await addFoodCollection.insertOne(newFood)
       res.send(result)
     })
     app.get('/BrandProduct/:name',async(req,res)=>{
@@ -44,22 +45,28 @@ async function run() {
       const result = await foodCollection.find(query).toArray()
       res.send(result)
  })
+    app.get('/viewDetails/:id',async(req,res)=>{
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const result = await foodCollection.findOne(query)
+      res.send(result)
+ })
 
     app.put("/update/:id", async (req, res) => {
       const id = req.params.id;
-      const body = req.body;
+     
+      const updateFood =req.body
       const filter = { _id: new ObjectId(id) };
-      const updateDoc = {
+      const options ={ upsert :true}
+      const food = {
         $set: {
-          name: body.name,
-          photoUrl: body.photoUrl,
-          
-          
-          description: body.description,
+          Name:updateFood.Name,
+           BrandName:updateFood.BrandName,
+            Image:updateFood.Image,
          
         },
       };
-      const result = await foodCollection.updateOne(filter, updateDoc);
+      const result = await foodCollection.updateOne(filter,food, options);
       res.send(result);
     });
 
