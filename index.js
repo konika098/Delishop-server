@@ -27,30 +27,60 @@ async function run() {
 
     const foodCollection = client.db('foodDB').collection('food')
     const addFoodCollection = client.db('foodDB').collection('addFood')
+    const Cart = client.db('foodDB').collection('cart')
     
     app.get('/food', async(req,res)=>{
       const cursor =foodCollection.find();
       const result = await cursor.toArray();
       res.send(result)
     })
-    app.post('/food', async(req,res)=>{
-      const newFood =req.body
-      console.log(newFood)
-      const result = await addFoodCollection.insertOne(newFood)
-      res.send(result)
-    })
+
+
     app.get('/BrandProduct/:name',async(req,res)=>{
       const BrandName = req.params.name
       const query = {BrandName :{$eq : BrandName}}
       const result = await foodCollection.find(query).toArray()
       res.send(result)
  })
-    app.get('/viewDetails/:id',async(req,res)=>{
-      const id = req.params.id
-      const query = {_id: new ObjectId(id)}
-      const result = await foodCollection.findOne(query)
+
+ app.get('/viewDetails/:id',async(req,res)=>{
+  const id = req.params.id
+  const query = {_id: new ObjectId(id)}
+  const result = await foodCollection.findOne(query)
+  res.send(result)
+})
+
+
+
+app.get('/cart', async (req, res) => {
+const cursor = Cart.find()
+const result = await cursor.toArray()
+res.send(result)
+})
+
+
+    app.post('/food', async(req,res)=>{
+      const newFood =req.body
+      console.log(newFood)
+      const result = await addFoodCollection.insertOne(newFood)
       res.send(result)
- })
+    })
+ 
+    app.delete('/deleteCart/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await Cart.deleteOne(query)
+      res.send(result)
+    })
+
+
+
+ app.post('/cart', async (req, res) => {
+  const addCart = req.body;
+  console.log(addCart);
+  const result = await Cart.insertOne(addCart)
+  res.send(result)
+})
 
     app.put("/update/:id", async (req, res) => {
       const id = req.params.id;
